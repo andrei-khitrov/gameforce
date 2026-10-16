@@ -115,6 +115,8 @@
   --sig-1-dur: .4s;                              /* src: паспорт 04 · twitchrivals F — duration .4 */
   --sig-2-ease: cubic-bezier(.25, 1, .5, 1);     /* src: паспорт 02 · twitchrivals Y — буквы H2 scaleY от низа */
   --sig-2-dur: .15s;                             /* src: паспорт 02 · twitchrivals Y — duration .15 на букву */
+  --sig-3-ease: cubic-bezier(.19, 1, .22, 1);    /* src: паспорт 00 · astranova.world портал — expo.out (у донора в CSS портала тот же cubic-bezier(0.19,1,0.22,1)) */
+  --sig-3-dur: 1.2s;                             /* src: паспорт 00 · astranova.world портал — линии и круг duration 1.2 (_app-db4900d410b13240.js:329299) */
 
   --cols-m: 1;   /* сантехника base.css: колонок сетки на телефоне по умолчанию */
   --col-m: auto; /* сантехника base.css: место элемента сетки на телефоне */

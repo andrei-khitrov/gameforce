@@ -46,6 +46,36 @@
 <script type="application/ld+json" data-publish>{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"С какого возраста можно играть?","acceptedAnswer":{"@type":"Answer","text":"Компьютеры в аренду — с 12 лет."}},{"@type":"Question","name":"Нужно ли бронировать место?","acceptedAnswer":{"@type":"Answer","text":"Позвоните или напишите администратору в Telegram — место придержат. Можно прийти и без записи."}},{"@type":"Question","name":"Как оплатить?","acceptedAnswer":{"@type":"Answer","text":"Наличными или картой: Мир, Visa, MasterCard, Maestro."}},{"@type":"Question","name":"Сохранятся ли мои аккаунты и файлы?","acceptedAnswer":{"@type":"Answer","text":"Нет, и это защита: после перезагрузки компьютер стирает логины, пароли, файлы и историю браузера."}},{"@type":"Question","name":"Куда деть вещи?","acceptedAnswer":{"@type":"Answer","text":"В персональный шкафчик. Телефон и кошелёк лучше держать при себе."}},{"@type":"Question","name":"Сколько человек помещается на диване с PS5?","acceptedAnswer":{"@type":"Answer","text":"Двое. Если компания больше, берите ещё места рядом."}},{"@type":"Question","name":"Клуб правда не закрывается?","acceptedAnswer":{"@type":"Answer","text":"Работает круглосуточно, без выходных и праздников. О технических перерывах клуб заранее пишет в группе ВКонтакте."}},{"@type":"Question","name":"Можно прийти с животным?","acceptedAnswer":{"@type":"Answer","text":"Только с кошкой."}},{"@type":"Question","name":"Есть подарочный сертификат?","acceptedAnswer":{"@type":"Answer","text":"Есть — спросите у администратора."}},{"@type":"Question","name":"Нет нужной игры — что делать?","acceptedAnswer":{"@type":"Answer","text":"Напишите в обсуждении группы ВКонтакте: клуб устанавливает игры по просьбам гостей."}}]}</script>
 </head>
 <body>
+<!-- 00 · портал загрузки (astranova.world): первый визит за сессию, не при reduced-motion и не по якорю; без JS его нет.
+     Разметка строится до первой отрисовки; main.js проигрывает вход и выход. Страховка: через 7 с портал снимается сам -->
+<script>
+(function (d, h) {
+  try {
+    if (sessionStorage.getItem('gf-portal') || matchMedia('(prefers-reduced-motion: reduce)').matches || location.hash.length > 1) return;
+    sessionStorage.setItem('gf-portal', '1');
+  } catch (e) { return; }
+  var txt = 'NEW DIGITAL SPACE \u00b7 GAMEFORCE \u00b7 \u041a\u0410\u041b\u0418\u041d\u0418\u041d\u0413\u0420\u0410\u0414 \u00b7 ', n = txt.length, r = 116, ring = '';
+  for (var i = 0; i < n; i++) {
+    var a = i * 360 / n, rad = a * Math.PI / 180, ch = txt.charAt(i);
+    if (ch === ' ') continue;
+    ring += '<text class="portal__ch ' + (a < 180 ? 'is-tr' : 'is-bl') + '" text-anchor="middle" dominant-baseline="central" transform="translate(' +
+      (r * Math.sin(rad)).toFixed(2) + ' ' + (-r * Math.cos(rad)).toFixed(2) + ') rotate(' + a.toFixed(2) + ')">' + ch + '</text>';
+  }
+  var el = d.createElement('div');
+  el.className = 'portal'; el.setAttribute('aria-hidden', 'true'); el.setAttribute('data-portal', ''); el.setAttribute('data-gate-ignore', '');
+  el.innerHTML = '<div class="portal__in" data-portal-in>' +
+    '<i class="portal__line portal__line--l"></i><i class="portal__line portal__line--r"></i>' +
+    '<div class="portal__mid"><i class="portal__line portal__line--m"></i><div class="portal__txt">' +
+    '<span class="portal__cast">CONNECTING TO NEW DIGITAL SPACE...</span><span class="portal__ready">SPACE READY</span></div></div>' +
+    '<div class="portal__circle"><svg class="portal__arcs" viewBox="0 0 300 300"><path class="portal__arc portal__arc--r" d="M150 6 A144 144 0 0 1 150 294"/>' +
+    '<path class="portal__arc portal__arc--l" d="M150 294 A144 144 0 0 1 150 6"/></svg>' +
+    '<svg class="portal__ring" viewBox="-150 -150 300 300">' + ring + '</svg><i class="portal__dash"></i>' +
+    '<img class="portal__logo" src="assets/img/logo.svg" width="48" height="48" alt=""></div></div>';
+  d.body.insertBefore(el, d.body.firstChild);
+  h.classList.add('is-portal');
+  setTimeout(function () { if (!window.__gfPortalRun && el.parentNode) { el.parentNode.removeChild(el); h.classList.remove('is-portal'); } }, 7000);
+})(document, document.documentElement);
+</script>
 <a class="skip" href="#main">К содержанию</a>
 
 <header class="head" data-head>

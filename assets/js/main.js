@@ -8,9 +8,92 @@
   site.boot(function (site) {
     var $ = site.$, $$ = site.$$, T = site.T, G = window.gsap, ST = window.ScrollTrigger;
     var STATIC = site.STATIC, RM = site.RM;
-    var sig1 = T.sig(1), sig2 = T.sig(2);
+    var sig1 = T.sig(1), sig2 = T.sig(2), sig3 = T.sig(3);
     var clamp = function (v, a, b) { return Math.min(b, Math.max(a, v)); };
     var map = function (v, a, b, c, d) { return c + (d - c) * clamp((v - a) / (b - a), 0, 1); };
+
+    /* ── 00 · портал загрузки (astranova.world, _app-db4900d410b13240.js:329299, функция eS) ──
+       Вход буквально: таймлайн delay .5; линии scaleY/scaleX 0→1 за 1.2 с с .2 (left — от верха, right — от низа, mid — от центра);
+       текст yPercent 100→0 за .7 с .4; круг scale .5→1 + проявление за 1.2 с .4; логотип за 1.5 с .8; знаки кольца
+       (две половины одновременно) opacity → 1 за 1 с, stagger .065, с 1.2 и заливка в акцент за 1.8 с; дуги 0→100 % за 1.8 с с 1.3;
+       по окончании — смена текста (старый вверх за .7, новый снизу за .7 с задержкой .5). Кривая expo.out — подпись --sig-3.
+       Выход как у донора по клику: кольцо, пунктир, средняя линия гаснут за .5; с .55 — фон круга прозрачный и круг гаснет
+       за .75, фон портала прозрачный за 1, боковые линии гаснут за .5, шапка 0 → 1 за .5; первый экран въезжает y 4rem → 0
+       за 1 с, stagger .035. Отличие от донора: вход сам через .8 с после «READY» (клик, клавиша, колесо — сразу);
+       щит в центре на выходе растёт и тает — передаёт место 3D-щиту, который как раз начинает въезд. */
+    var portal = $('[data-portal]'), portalDone = null, PORTAL = false;
+    if (portal) {
+      window.__gfPortalRun = true;
+      if (STATIC) { portal.parentNode.removeChild(portal); document.documentElement.classList.remove('is-portal'); }
+      else { PORTAL = true; portalDone = runPortal(); }
+    }
+    function runPortal() {
+      var root = document.documentElement, q = function (sel) { return $(sel, portal); }, qa = function (sel) { return $$(sel, portal); };
+      var E = sig3.ease, k = sig3.dur / 1.2, eOut = T.ease('--e-out');   // k = 1: длительности донора в долях подписи 1.2 с
+      var inner = q('[data-portal-in]'), lineL = q('.portal__line--l'), lineR = q('.portal__line--r'), lineM = q('.portal__line--m');
+      var cast = q('.portal__cast'), ready = q('.portal__ready'), circle = q('.portal__circle'), logo = q('.portal__logo');
+      var ring = q('.portal__ring'), dash = q('.portal__dash'), tr = qa('.portal__ch.is-tr'), bl = qa('.portal__ch.is-bl');
+      var accent = getComputedStyle(root).getPropertyValue('--c-accent-text').trim();
+      var head = $('[data-head]');
+      var heroItems = $$('.hero__top, .hero__slogan, .hero__lead, .hero__acts, .hero__sub');
+      // первый экран под порталом уже нарисован (LCP не ждёт портала); его появление — донорское, после выхода
+      $$('.hero [data-in]').forEach(function (el) { el.__in = 2; el.classList.add('is-in'); });
+      G.set(inner, { autoAlpha: 0 });
+      return new Promise(function (resolve) {
+        var entered = false, autoT = 0;
+        var skip = function () { enter(); };
+        var evs = ['click', 'keydown', 'wheel', 'touchstart'];
+        evs.forEach(function (e) { addEventListener(e, skip, { passive: true }); });
+        // вход — когда ядро объявит готовность (его потолок 5 с: «READY» к этому моменту уже в кадре) или раньше, по клику
+        site.ready(function () { enter(); });
+        var tl = G.timeline({ paused: true, delay: 0.5, onComplete: function () {   // seams:ok донор: delay .5
+          G.fromTo(cast, { yPercent: 0 }, { autoAlpha: 1, yPercent: -100, duration: 0.7 * k, ease: E });                    // seams:ok донор .7
+          G.fromTo(ready, { autoAlpha: 0, yPercent: 100 }, { autoAlpha: 1, yPercent: 0, duration: 0.7 * k, ease: E, delay: 0.5 });   // seams:ok донор .7 / .5
+          autoT = setTimeout(enter, 1000);                                                                                 // seams:ok «READY» почти въехал (.5 + .5 из .7) — вход
+        } });
+        tl.to(inner, { autoAlpha: 1, duration: 0.5, ease: eOut }, 0)                                                         // seams:ok донор .5 power1
+          .fromTo(lineL, { scaleY: 0 }, { scaleY: 1, duration: 1.2 * k, ease: E, transformOrigin: '50% 0%' }, 0.2)              // seams:ok донор
+          .fromTo(lineR, { scaleY: 0 }, { scaleY: 1, duration: 1.2 * k, ease: E, transformOrigin: '50% 100%' }, 0.2)            // seams:ok донор
+          .fromTo(lineM, { scaleX: 0 }, { scaleX: 1, duration: 1.2 * k, ease: E, transformOrigin: '50% 50%' }, 0.2)             // seams:ok донор
+          .fromTo(cast, { yPercent: 100 }, { autoAlpha: 1, yPercent: 0, duration: 0.7 * k, ease: E }, 0.4)                     // seams:ok донор
+          .fromTo(circle, { scale: 0.5, autoAlpha: 0 }, { autoAlpha: 1, scale: 1, duration: 1.2 * k, ease: E }, 0.4)           // seams:ok донор
+          .fromTo(logo, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.5 * k, ease: E }, 0.8)                                   // seams:ok донор
+          .to(tr, { opacity: 1, duration: 1 * k, ease: E, stagger: 0.065 }, 1.2)                                               // seams:ok донор .065
+          .to(tr, { fill: accent, duration: 1.8 * k, ease: E }, 1.2)                                                           // seams:ok донор 1.8
+          .to(bl, { opacity: 1, duration: 1 * k, ease: E, stagger: 0.065 }, 1.2)                                               // seams:ok донор .065
+          .to(bl, { fill: accent, duration: 1.8 * k, ease: E }, 1.2);                                                          // seams:ok донор 1.8
+        qa('.portal__arc').forEach(function (arc) { tl.add(site.draw(arc, { dur: 1.8 * k, ease: E }), 1.3); });                // seams:ok донор drawSVG 0→100 % за 1.8 с 1.3
+        tl.play();
+
+        function enter() {
+          if (entered) return;
+          entered = true;
+          clearTimeout(autoT);
+          evs.forEach(function (e) { removeEventListener(e, skip); });
+          portal.style.pointerEvents = 'none';
+          tl.kill(); G.killTweensOf([cast, ready]);
+          // слоган H2-буквами и печать вордмарка стартуют с готовностью страницы — сразу за порталом
+          $$('.hero__slogan .ch').forEach(function (c) { G.set(c, { scaleY: 0, transformOrigin: '50% 100%' }); });
+          G.timeline({ onComplete: function () {
+            if (portal.parentNode) portal.parentNode.removeChild(portal);
+            root.classList.remove('is-portal');
+            G.set(head, { clearProps: 'opacity' });
+          } })
+            .to([ring, dash, lineM, cast], { autoAlpha: 0, duration: 0.5, ease: eOut }, 0)                                    // seams:ok донор .5 power1
+            .to(ready, { autoAlpha: 0, yPercent: -100, duration: 0.5, ease: eOut }, 0)                                        // seams:ok донор
+            .to(qa('.portal__arcs'), { autoAlpha: 0, duration: 0.75, ease: E }, 0.55)                                         // seams:ok донор .75 с .55
+            .set(circle, { backgroundColor: 'transparent' }, 0.55)
+            .to(circle, { autoAlpha: 0, duration: 0.75, ease: E }, 0.55)                                                     // seams:ok донор
+            .to(logo, { scale: 3, autoAlpha: 0, duration: 0.75, ease: E }, 0.55)                                              // seams:ok своё: щит передаёт место 3D
+            .to(portal, { backgroundColor: 'transparent', duration: 1, ease: eOut }, 0.55)                                    // seams:ok донор 1 power1.out
+            .to([lineL, lineR], { autoAlpha: 0, duration: 0.5, ease: eOut }, 0.55)                                            // seams:ok донор
+            .fromTo(head, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: eOut }, 0.55)                                    // seams:ok донор .site-head (без visibility — шапка кликабельна сразу)
+            .fromTo(heroItems, { opacity: 0, y: '4rem' }, { opacity: 1, y: 0, duration: 1, stagger: 0.035, ease: E,           // seams:ok донор y 4rem, stagger .035
+              clearProps: 'opacity,transform' }, 0.55);
+          resolve();
+        }
+      });
+    }
 
     /* ── шапка: фон после первого экрана ── */
     var head = $('[data-head]'), hero = $('#top');
@@ -57,7 +140,7 @@
         timer = setTimeout(function tick() { show(u + 1); if (u < chars.length - 1) timer = setTimeout(tick, step); }, 200);   // seams:ok донор E: старт через 200 мс
       }
       function reset() { clearTimeout(timer); show(-1); cur.style.opacity = '0'; }
-      reset();
+      if (!PORTAL || !el.closest('.hero')) reset(); else cur.style.opacity = '0';
       site.ready(function () {
         new IntersectionObserver(function (es) { if (es[0].isIntersecting) run(); else reset(); },
           { rootMargin: '-100px 0px' }).observe(el);                // донор: useInView margin -100px, once: false
@@ -69,7 +152,7 @@
       var chars = site.splitWords(el, { chars: true }).chars;
       el.classList.add('is-split');
       if (STATIC || !chars.length) return;
-      G.set(chars, { scaleY: 0, transformOrigin: '50% 100%' });
+      if (!PORTAL || !el.closest('.hero')) G.set(chars, { scaleY: 0, transformOrigin: '50% 100%' });
       site.ready(function () {
         new IntersectionObserver(function (es) {
           var on = es[0].isIntersecting;
@@ -302,5 +385,7 @@
         load().then(function (m) { cvProps.forEach(function (cv) { m.prop(cv, cv.getAttribute('data-gl')); }); }).catch(function () {});
       });
     });
+
+    return portalDone;
   });
 })();
