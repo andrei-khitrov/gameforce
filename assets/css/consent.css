@@ -1,0 +1,26 @@
+/* МЕТРИКА И COOKIE — плашка consent.js. Только var() из tokens.css.
+   Плашка внизу окна, не модальная: страницей можно пользоваться, пока человек не ответил.
+   Слой — --z-sticky: ниже шапки и меню-оверлея (меню не прячется под плашку). */
+
+.cookie-bar {
+  position: fixed; z-index: var(--z-sticky);
+  inset-inline: var(--s-2); inset-block-end: var(--s-2);
+  margin-inline: auto; max-width: var(--wrap);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border: var(--line) solid var(--c-line); border-radius: var(--r-s);
+  background-color: var(--c-surface); color: var(--c-text);
+  box-shadow: var(--shadow);
+  font-size: var(--fs-6); line-height: var(--lh-6);
+  /* на телефоне с вырезом плашка не уходит под полосу жестов */
+  margin-block-end: env(safe-area-inset-bottom);
+}
+.cookie-bar__text { flex: 1 1 20em; min-width: 0; } /* seams:ok мера строки текста плашки, не шаг сетки */
+.cookie-bar__text a { color: var(--c-accent-text); text-decoration: underline; text-underline-offset: .15em; }
+.cookie-bar__actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.cookie-bar__btn { min-height: var(--tap); }
+
+@media (max-width: 767px) {
+  .cookie-bar__actions { width: 100%; }
+  .cookie-bar__btn { flex: 1 1 0; }
+}

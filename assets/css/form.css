@@ -1,0 +1,60 @@
+/* ФОРМЫ — состояния для assets/js/form.js. Облик полей (рамка, фон, кегль, раскладка) — от стиль-донора
+   в sections.css; здесь только то, без чего состояние не видно или форма ломается. Только var() из tokens.css.
+   Подключение: <link rel="stylesheet" href="assets/css/form.css"> после base.css, до sections.css. */
+
+/* ── Без JS (или form.js не загрузился) запасной контакт виден всегда: человек должен знать, куда писать.
+   form.js ставит html.form-js в момент загрузки. !important — потому что base.css держит [hidden] через !important ── */
+html:not(.form-js) [data-form-fallback][hidden] { display: block !important; }
+
+/* ── Ловушка для ботов (name="website"): вне экрана и вне дерева доступности.
+   display:none не годится — часть ботов пропускает скрытые поля и ловушка не срабатывает ── */
+.form__hp {
+  position: absolute !important; inset-inline-start: 0; inset-block-start: 0;
+  width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; opacity: 0; pointer-events: none;
+}
+/* у формы должен быть позиционированный предок, иначе ловушка уедет к краю страницы и даст перелив */
+[data-form] { position: relative; }
+
+/* ── Поле: подпись, поле, ошибка — столбиком ── */
+.field { display: grid; gap: var(--s-1); min-width: 0; }
+.field input, .field select, .field textarea { min-height: var(--tap); min-width: 0; width: 100%; }
+.field textarea { resize: vertical; }
+
+/* ── Ошибка ── */
+.field__error {
+  color: var(--c-accent-text);
+  font-size: var(--fs-7); line-height: var(--lh-7);
+}
+[aria-invalid="true"] { border-color: var(--c-accent-text) !important; }
+[aria-invalid="true"]:focus-visible { outline-color: var(--c-accent-text); }
+
+/* ── Согласие на обработку ПДн: квадрат + текст, зона нажатия не меньше --tap ── */
+.form__consent {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--s-2); align-items: start;
+  font-size: var(--fs-6); line-height: var(--lh-6); color: var(--c-muted);
+}
+.form__consent input[type="checkbox"] {
+  /* квадрат крупнее системного и в центре зоны нажатия --tap: label рядом тоже кликабелен */
+  width: calc(var(--tap) / 2); height: calc(var(--tap) / 2); margin: calc(var(--tap) / 4);
+  margin-inline-start: 0; accent-color: var(--c-accent); cursor: pointer;
+}
+.form__consent label { display: block; min-height: var(--tap); padding-block-start: calc(var(--tap) / 4); cursor: pointer; }
+.form__consent a { color: var(--c-text); text-decoration: underline; text-underline-offset: .15em; }
+.form__consent .field__error { grid-column: 1 / -1; }
+
+/* ── Идёт отправка: кнопка выключена (form.js), курсор ожидания, повторный клик не проходит ── */
+.is-sending { cursor: progress; }
+.is-sending [type="submit"], .is-sending button:not([type]) { opacity: .6; pointer-events: none; }
+[data-form] button:disabled { cursor: progress; }
+
+/* ── Панели исходов: успех, ошибка, fallback ── */
+.form__panel {
+  padding: var(--s-3) var(--s-4);
+  border: var(--line) solid var(--c-line); border-radius: var(--r-s);
+  background-color: var(--c-surface); color: var(--c-text);
+}
+.form__panel + .form__panel { margin-block-start: var(--s-2); }
+.form__panel a { color: var(--c-accent-text); text-decoration: underline; text-underline-offset: .15em; }
+.form__panel--error { border-color: var(--c-accent-text); }
+[data-form-copied] { display: block; margin-block-start: var(--s-1); color: var(--c-muted); font-size: var(--fs-7); line-height: var(--lh-7); }

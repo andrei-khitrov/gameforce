@@ -1,0 +1,21 @@
+{
+ "name": "GAMEFORCE",
+ "short_name": "GAMEFORCE",
+ "start_url": "/gameforce/",
+ "display": "browser",
+ "background_color": "#050505",
+ "theme_color": "#050505",
+ "icons": [
+  {
+   "src": "/gameforce/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/gameforce/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ],
+ "scope": "/gameforce/"
+}
