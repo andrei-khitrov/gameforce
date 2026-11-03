@@ -104,8 +104,6 @@ html.is-portal .head { opacity: 0; }                           /* шапка в�
 
 /* ── 01 · первый экран: сетка «верх / текст | щит / вордмарк»; щит вписывается в область [data-anchor] ── */
 .hero { position: relative; display: flex; min-height: 100vh; min-height: 100svh; overflow: hidden; overflow: clip; }
-.hero__stage { position: absolute; inset: 0; }
-.hero__gl { width: 100%; height: 100%; }
 .hero__in {
   position: relative; display: grid; gap: var(--s-4) var(--gap);
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -118,6 +116,7 @@ html.is-portal .head { opacity: 0; }                           /* шапка в�
 .hero__space { grid-area: space; position: relative; min-height: 0; }
 @media (min-width: 768px) { .hero__space { grid-row: 1 / 3; } }   /* щит захватывает и верхнюю строку: ярлык и рейтинг лежат поверх холста */
 .hero__still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: opacity var(--d-3) var(--e-out); }
+.hero__gl { position: absolute; inset: 0; width: 100%; height: 100%; }   /* холст только на области щита — в 2–2,5 раза меньше пикселей, чем на весь экран */
 html.gl-shield .hero__still { opacity: 0; }
 .hero__rate { display: grid; justify-items: end; align-content: center; gap: var(--s-1); min-height: var(--tap); text-align: end; transition: color var(--d-1) var(--e-out); }
 @media (hover: hover) and (pointer: fine) { .hero__rate:hover { color: var(--c-accent-text); } }
@@ -315,8 +314,7 @@ html.gl-shield .hero__still { opacity: 0; }
 .turniry__card {
   position: relative; display: flex; flex-direction: column; gap: var(--s-4);
   max-width: 44rem; margin-block-start: var(--s-5); margin-inline-start: auto; padding: var(--s-5);   /* seams:ok — донор: max-w-232 */
-  background-color: color-mix(in srgb, var(--c-bg) 90%, transparent);
-  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);   /* seams:ok — донор: backdrop-blur-sm */
+  background-color: color-mix(in srgb, var(--c-bg) 94%, transparent);   /* донор: bg-black/90 + backdrop-blur-sm; размытие поверх 12 движущихся кадров пересчитывалось каждый кадр (43 % рывков) — без него, фон плотнее */
   border: var(--line) solid var(--c-line);
 }
 .turniry__dot { position: absolute; width: var(--s-3); height: var(--s-3); background-color: var(--c-accent); }
@@ -381,7 +379,7 @@ html.gl-shield .hero__still { opacity: 0; }
 .faq__aside { display: grid; gap: var(--s-2); align-content: start; }
 .faq__h2 { font-size: var(--fs-2); line-height: var(--lh-2); letter-spacing: var(--ls-2); font-stretch: 100%; margin-block-end: var(--s-4); }
 .faq__stack { position: relative; display: none; padding-inline-start: var(--s-2); }
-.faq__img { width: 83.333%; aspect-ratio: 4 / 3; object-fit: cover; }   /* seams:ok — донор: w-5/6, кадры 1000×750 */
+.faq__img { width: 83.333%; aspect-ratio: 4 / 3; object-fit: cover; will-change: opacity; }   /* прозрачность по прокрутке — на своём слое, без перерисовки */   /* seams:ok — донор: w-5/6, кадры 1000×750 */
 .faq__img + .faq__img { position: absolute; inset-block-start: var(--s-5); inset-inline-start: var(--s-5); }
 .faq__img + .faq__img + .faq__img { inset-block-start: var(--s-6); inset-inline-start: var(--s-6); }
 .faq__list { display: flex; flex-direction: column; gap: var(--s-2); }

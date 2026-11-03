@@ -181,17 +181,20 @@
     if (zony) {
       var track = $('[data-track]', zony), tags = $$('[data-tag]', zony);
       var spans = [[0, 0.4], [0.25, 0.65], [0.45, 0.85], [0.6, 1]];   // донор: [0,.4] [.3,.7] [.6,1] на три ярлыка; четвёртый вставлен равным шагом
-      var dist = 0, x = 0, v = 0, target = 0, raf = 0, prevT = 0;
+      var dist = 0, x = 0, v = 0, target = 0, prevT = 0;
       var measure = function () { dist = Math.max(0, track.scrollWidth - innerWidth); };
       var put = function () { track.style.transform = 'translate3d(' + x.toFixed(2) + 'px,0,0)'; };
-      var spring = function (now) {
+      var springOn = false;
+      var spring = function () {
+        var now = performance.now();
         var dt = Math.min(0.05, prevT ? (now - prevT) / 1000 : 0.016); prevT = now;
         var steps = Math.ceil(dt / 0.004), h = dt / steps;
         for (var k = 0; k < steps; k++) { var a = -150 * (x - target) - 50 * v; v += a * h; x += v * h; }   // донор: useSpring 150 / 50
-        if (Math.abs(x - target) < 0.001 && Math.abs(v) < 0.001) { x = target; v = 0; put(); raf = 0; prevT = 0; return; }   // restDelta .001
-        put(); raf = requestAnimationFrame(spring);
+        if (Math.abs(x - target) < 0.001 && Math.abs(v) < 0.001) { x = target; v = 0; put(); G.ticker.remove(spring); springOn = false; prevT = 0; return; }   // restDelta .001
+        put();
       };
-      var kick = function () { if (!raf) raf = requestAnimationFrame(spring); };
+      // пружина — в тике gsap: тот же кадр, что Lenis и ScrollTrigger (свой rAF давал рывки ленты)
+      var kick = function () { if (!springOn) { springOn = true; prevT = 0; G.ticker.add(spring); } };
       site.pin(zony, {
         panels: '[data-panel]',
         minHeight: 560,                                              // карточка 30vw (≤ 430px) помещается и в окно 560px — ноутбуки 1366×768 и 1440×900 с панелями получают ленту
@@ -203,7 +206,7 @@
           },
           onRefresh: function (s) { measure(); target = -dist * s.progress; x = target; v = 0; put(); }
         },
-        cleanup: function () { if (raf) cancelAnimationFrame(raf); raf = 0; x = v = target = 0; track.style.transform = ''; tags.forEach(function (tg) { tg.style.translate = ''; }); }
+        cleanup: function () { if (springOn) { G.ticker.remove(spring); springOn = false; } x = v = target = 0; track.style.transform = ''; tags.forEach(function (tg) { tg.style.translate = ''; }); }
       });
       // Tab по ленте: ядро прокручивает к панели, а пружина догоняла бы ~2 с — ставим ленту сразу
       zony.addEventListener('focusin', function () { requestAnimationFrame(function () { x = target; v = 0; put(); }); });
@@ -265,9 +268,10 @@
       var wide = matchMedia('(min-width: 768px)');
       var stairs = function (p) {
         rows.forEach(function (r, i) {
-          if (!wide.matches) { r.style.width = ''; return; }
+          if (!wide.matches) { if (r.__w != null) { r.__w = null; r.style.width = ''; } return; }
           var w0 = 100 - i / n * 50;
-          r.style.width = (STATIC ? 100 - i / n * 25 : map(p, 0, 0.9, w0, 100)).toFixed(2) + '%';   // донор: reduced — 100 − i/n·25
+          var w = STATIC ? 100 - i / n * 25 : Math.round(map(p, 0, 0.9, w0, 100) * 4) / 4;   // донор: reduced — 100 − i/n·25; шаг .25 % — меньше пересчётов раскладки
+          if (r.__w !== w) { r.__w = w; r.style.width = w + '%'; }
         });
         if (!STATIC) [[0, 0.1], [0.2, 0.3], [0.4, 0.5]].forEach(function (r, k) { if (imgs[k]) imgs[k].style.opacity = map(p, r[0], r[1], 0, 1).toFixed(3); });
       };
@@ -373,7 +377,7 @@
       var root = document.documentElement;
       once(cvHero, '0px', function () {
         load().then(function (m) {
-          m.shield(cvHero, { anchor: $('[data-anchor]'), onReady: function () { root.classList.add('gl-shield'); }, onLost: function () { root.classList.remove('gl-shield'); } });
+          m.shield(cvHero, { onReady: function () { root.classList.add('gl-shield'); }, onLost: function () { root.classList.remove('gl-shield'); } });
         }).catch(function (e) { console.warn('[gameforce] 3D недоступно:', e && e.message); });
       });
       once(cvRep, '50% 0px', function () {
